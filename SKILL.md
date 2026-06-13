@@ -1,13 +1,13 @@
 ---
 name: baidu-netdisk
-description: 上传文件到百度网盘并生成分享链接、列出/删除网盘内容、查询容量。Use when user wants to (1) Upload a local file or folder to Baidu Netdisk, (2) Generate a permanent or time-limited share link, (3) List, query, or delete files in Baidu Netdisk, (4) Sync a local directory with Baidu Netdisk, or (5) Check remaining storage quota. 通过百度网盘 Web API（与 pan.baidu.com 网页版一致）实现，零外部 SDK 依赖。
+description: 上传文件到百度网盘并生成分享链接、列出/删除网盘内容、查询容量。Use when user wants to (1) Upload a local file or folder to Baidu Netdisk, (2) Generate a permanent share link with optional extraction code (password), (3) List/delete files, (4) Check quota, (5) Download files.
 ---
 
 # 百度网盘工具 Skill
 
 > 触发词：「上传到百度网盘」「生成分享链接」「百度网盘分享」「网盘配额」「同步到百度网盘」「百度网盘 CLI」
 
-通过调用百度网盘 Web API（与 pan.baidu.com 网页版一致）实现上传、下载、列目录、生成分享链接、删除等操作。**完全脱离 bypy** —— bypy 不支持生成分享链接，且 OAuth 流程繁琐，本 Skill 直接用浏览器 Cookie 调 API，一步到位。
+通过调用百度网盘 Web API（与 pan.baidu.com 网页版一致）实现上传、下载、列目录、生成分享链接、删除等操作。**完全脱离 bypy** —— bypy 不支持生成永久分享链接，这个 Skill 用一行命令搞定。
 
 ## When to Use
 
@@ -68,7 +68,7 @@ bash examples/setup-env.sh       # Git Bash / WSL / macOS
 
 ### 获取方法
 
-详见 [[references/auth-setup.md]] —— 图文步骤讲解用 F12 开发者工具从 `pan.baidu.com` 抓 BDUSS。
+详见 [references/auth-setup.md](references/auth-setup.md) —— 图文步骤讲解用 F12 开发者工具从 `pan.baidu.com` 抓 BDUSS。
 
 ### ⚠️ 安全警告
 
@@ -129,11 +129,10 @@ python scripts/baidu_pcs.py share /apps/bypy/agent-skills --code 1234 --period 7
 | 分享 | POST | `https://pan.baidu.com/share/set` |
 | 取消分享 | POST | `https://pan.baidu.com/share/cancel` |
 | 删除（v1.1.1+） | POST | `https://pan.baidu.com/api/filemanager/delete?opera=delete` |
-| 删除 | POST | `https://pan.baidu.com/api/filemanager/delete` |
 
 `bdstoken` 通过 GET `https://pan.baidu.com/` HTML 抓取（regex `"bdstoken"\s*:\s*"([^"]+)"`）。
 
-完整 endpoint/参数/errno 含义见 [[references/api-cheatsheet.md]]。
+完整 endpoint/参数/errno 含义见 [references/api-cheatsheet.md](references/api-cheatsheet.md)。
 
 ## Examples
 
@@ -200,7 +199,7 @@ result = subprocess.run([
 
 | 症状 | 原因 | 解决 |
 |------|------|------|
-| `errno=110` / `-1` | BDUSS 过期 | 重新从浏览器抓（见 auth-setup.md） |
+| `errno=110` / `-1` | BDUSS 过期 | 重新从浏览器抓（见 [auth-setup.md](references/auth-setup.md)） |
 | `errno=-9` | 路径不存在 | 先用 `meta` 确认父目录 |
 | `errno=8` | 文件/目录已存在 | 重新生成路径，或在上传时加 `ondup=overwrite` |
 | `errno=403` | STOKEN 缺失或过期 | 重新抓 STOKEN |
@@ -210,14 +209,14 @@ result = subprocess.run([
 ## 清理建议
 
 - 用完 `share` 命令创建的链接若不需要长期保留，调用 `delete` 命令删除网盘上的对应文件即可同时让链接失效
-- 想"取消分享但保留文件"，百度网页版有"我的分享 → 取消分享"按钮，API 上对应 endpoint 是 `/share/cancel`（本 Skill 未实现，可参考 api-cheatsheet.md 自加）
+- 想"取消分享但保留文件"，百度网页版有"我的分享 → 取消分享"按钮，API 上对应 endpoint 是 `/share/cancel`（本 Skill 未实现，可参考 [api-cheatsheet.md](references/api-cheatsheet.md) 自行扩展）
 
 ## References
 
-- [[references/auth-setup.md]] — 如何从浏览器抓 BDUSS Cookie（图解）
-- [[references/api-cheatsheet.md]] — 百度网盘 Web API 完整速查表
-- [[examples/upload-and-share.sh]] — 上传 + 分享一键脚本
-- [[examples/sync-folder.sh]] — 文件夹同步脚本（可配合 cron）
+- [references/auth-setup.md](references/auth-setup.md) — 如何从浏览器抓 BDUSS Cookie（图解）
+- [references/api-cheatsheet.md](references/api-cheatsheet.md) — 百度网盘 Web API 完整速查表
+- [examples/upload-and-share.sh](examples/upload-and-share.sh) — 上传 + 分享一键脚本
+- [examples/sync-folder.sh](examples/sync-folder.sh) — 文件夹同步脚本（可配合 cron）
 
 ## 历史
 
