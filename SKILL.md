@@ -25,7 +25,11 @@ description: 上传文件到百度网盘并生成分享链接、列出/删除网
 
 ## Authentication
 
-### 环境变量（必须）
+### 凭证来源（优先级从高到低）
+
+1. **环境变量** `BAIDU_BDUSS` / `BAIDU_STOKEN` / `BAIDU_BAIDUID`（任何 shell 都支持）
+2. **.env 文件**（v1.3.0+ 推荐）—— 在项目根目录创建 `.env`，脚本自动读取。需要 `pip install python-dotenv`
+3. **bypy 缓存**（兜底）—— `~/.bypy/bypy.json`，已用 bypy 登录的机器可复用
 
 | 变量 | 必需 | 说明 |
 |------|------|------|
@@ -33,9 +37,34 @@ description: 上传文件到百度网盘并生成分享链接、列出/删除网
 | `BAIDU_STOKEN` | ⭕ 推荐 | 安全令牌，部分 API 需要 |
 | `BAIDU_BAIDUID` | ⭕ 推荐 | 设备指纹 |
 
+### .env 文件示例
+
+```bash
+# 复制 .env.example 为 .env，填入真实值
+cp .env.example .env
+chmod 600 .env
+```
+
+```bash
+# .env 内容
+BAIDU_BDUSS=abc123...
+BAIDU_STOKEN=def456...
+BAIDU_BAIDUID=ghi789...   # 可空
+```
+
+`.env` 已在 `.gitignore` 中，**绝不会**被 git 追踪。
+
+### 一键设置
+
+```bash
+bash examples/setup-env.sh       # Git Bash / WSL / macOS
+# 或
+.\examples\setup-env.ps1         # PowerShell
+```
+
 ### 兜底方案
 
-若环境变量未设置，脚本会尝试从 `~/.bypy/bypy.json` 读取之前 bypy 登录过的凭证。这样**已经用 bypy 登录过的机器可以直接复用**，无需重复抓 Cookie。
+若环境变量 + .env 都没设置，脚本会尝试从 `~/.bypy/bypy.json` 读取之前 bypy 登录过的凭证。这样**已经用 bypy 登录过的机器可以直接复用**，无需重复抓 Cookie。
 
 ### 获取方法
 
@@ -44,7 +73,7 @@ description: 上传文件到百度网盘并生成分享链接、列出/删除网
 ### ⚠️ 安全警告
 
 - **绝不要把 BDUSS 提交到 git**
-- **绝不要在脚本里硬编码 BDUSS**（本 Skill 强制走环境变量）
+- **绝不要在脚本里硬编码 BDUSS**（本 Skill 强制走环境变量 / .env）
 - 用完建议在 [百度网盘设置 → 设备管理](https://pan.baidu.com/settings/security/auth) **撤销 token**
 - BDUSS 等同于账号密码，泄漏后他人可完全控制你的网盘
 
@@ -94,10 +123,12 @@ python scripts/baidu_pcs.py share /apps/bypy/agent-skills --code 1234 --period 7
 | 容量 | GET | `https://pan.baidu.com/api/quota` |
 | 列目录 | GET | `https://pan.baidu.com/api/list` |
 | 元信息 | GET | `https://pan.baidu.com/api/filemetas` |
-| 上传 | POST | `https://pan.baidu.com/api/upload` |
+| 上传（v1.1.0+ 三步） | POST × 3 | ① `https://pan.baidu.com/api/precreate` ② `https://pcs.baidu.com/rest/2.0/pcs/file?method=upload` ③ `https://pan.baidu.com/api/create` |
 | 创建目录 | POST | `https://pan.baidu.com/api/create` |
 | 下载 | GET | `dlink` 字段返回的 URL（自动重定向） |
 | 分享 | POST | `https://pan.baidu.com/share/set` |
+| 取消分享 | POST | `https://pan.baidu.com/share/cancel` |
+| 删除（v1.1.1+） | POST | `https://pan.baidu.com/api/filemanager/delete?opera=delete` |
 | 删除 | POST | `https://pan.baidu.com/api/filemanager/delete` |
 
 `bdstoken` 通过 GET `https://pan.baidu.com/` HTML 抓取（regex `"bdstoken"\s*:\s*"([^"]+)"`）。

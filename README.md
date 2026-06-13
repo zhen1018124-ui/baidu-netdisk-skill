@@ -18,11 +18,11 @@
 
 ### 1. 安装依赖
 
-只需要 Python 3.8+ 和一个第三方库：
-
 ```bash
-pip install requests
+pip install requests python-dotenv
 ```
+
+> `python-dotenv` 让本工具自动读取 `.env` 文件（v1.3.0+ 推荐）。不装也能用（走纯环境变量兼容模式）。
 
 ### 2. 抓 Cookie（一次性）
 
@@ -31,25 +31,51 @@ pip install requests
 简版：
 
 1. 浏览器打开 https://pan.baidu.com 并确认登录
-2. F12 → Console → 运行：
+2. F12 → Application → Cookies → https://pan.baidu.com
+3. 找到 `BDUSS` / `STOKEN` / `BAIDUID` 三个值，复制到剪贴板
 
-```javascript
-copy(
-  "BAIDU_BDUSS=" + document.cookie.match(/BDUSS=([^;]+)/)[1] + "\n" +
-  "BAIDU_STOKEN=" + document.cookie.match(/STOKEN=([^;]+)/)[1] + "\n" +
-  "BAIDU_BAIDUID=" + document.cookie.match(/BAIDUID=([^;]+)/)[1]
-)
-```
+> ⚠️ `STOKEN` 是 HttpOnly，`document.cookie` 拿不到，必须到 Application 面板里看
 
-3. 把剪贴板里的三行 export 到 shell：
+### 3. 写入 .env
+
+**方式 A：交互式（推荐，bash / zsh）**
 
 ```bash
-export BAIDU_BDUSS="..."
-export BAIDU_STOKEN="..."
-export BAIDU_BAIDUID="..."
+bash examples/setup-env.sh
 ```
 
-### 3. 验证
+按提示粘贴三个 Cookie，脚本自动：
+- 写 `.env` 文件
+- `chmod 600` 限制权限
+- 跑 quota 验证
+
+**方式 A：交互式（推荐，PowerShell）**
+
+```powershell
+.\examples\setup-env.ps1
+```
+
+**方式 B：手动编辑**
+
+```bash
+cp .env.example .env
+chmod 600 .env       # Linux / macOS / Git Bash
+# Windows PowerShell: icacls .env /inheritance:r /grant:r "$env:USERNAME:(R,W)"
+
+# 用编辑器打开 .env，把三个值填进去
+code .env          # VSCode
+# 或 notepad .env  # 记事本
+```
+
+`.env` 文件长这样：
+
+```bash
+BAIDU_BDUSS=abc123...   # 192 位
+BAIDU_STOKEN=def456...  # 64 位
+BAIDU_BAIDUID=ghi789... # 32 位（可空）
+```
+
+### 4. 验证
 
 ```bash
 python scripts/baidu_pcs.py quota
@@ -65,9 +91,9 @@ python scripts/baidu_pcs.py quota
 
 看到容量数字说明 Cookie 可用。
 
-> 💡 想更省事？直接跑 `bash examples/setup-and-test.sh`，交互式输入三个 Cookie 后自动验证。
+> 💡 **老用户**：v1.2.0 的 `setup-and-test.sh` / `setup-and-test.ps1` 仍能用（已重定向到 `setup-env.sh` / `setup-env.ps1`）。
 >
-> 💡 **Windows PowerShell 用户**：跑 `examples/setup-and-test.ps1`（UTF-8 BOM，PowerShell 原生版）。会自动检测 Python 路径、设置 UTF-8 BOM env 文件、修改 Profile 让 env 永久生效。
+> 💡 **不想用 .env？** 直接 `export BAIDU_BDUSS=...` 设环境变量也行，脚本会优先读环境变量。
 
 ### 4. 上传 + 分享（一行命令）
 

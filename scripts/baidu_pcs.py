@@ -12,6 +12,7 @@ baidu_pcs.py — 百度网盘 Web API CLI 工具
 - 分享链接默认生成 **永久有效**（period=0）；如需限时通过 --period 指定
 
 依赖：requests（环境已有，零新依赖）
+可选：python-dotenv（用于 .env 文件支持，未装也能跑）
 """
 
 import argparse
@@ -25,6 +26,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import requests
+
+# 可选：从 .env 文件加载凭证（pip install python-dotenv）
+# 找不到 .env / 没装 dotenv 都不会报错，自动 fallback 到纯环境变量
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # 兼容老用户：未装 python-dotenv 也能跑
 
 # Windows GBK 控制台兼容：强制 UTF-8 输出
 # 否则打印 ✓ / ✗ / 中文路径时会 UnicodeEncodeError

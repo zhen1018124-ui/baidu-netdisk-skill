@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-06-13
+
+### Added
+- **.env 文件支持**：自动从项目根目录 `.env` 读取凭证
+  - 在 `baidu_pcs.py` 顶部加 `try: from dotenv import load_dotenv; load_dotenv()`（向后兼容，未装 `python-dotenv` 也能跑）
+  - 新增 `.env.example` 模板（**已 git track**，只有占位符）
+  - `.gitignore` 加 `.env` 排除 + `!.env.example` 重新包含
+- **新 setup 脚本**（推荐入口）：
+  - `examples/setup-env.sh` —— bash / zsh / Git Bash / WSL / macOS 通用
+  - `examples/setup-env.ps1` —— PowerShell 原生版
+  - 两个脚本都会：交互输入 → 写 `.env` → `chmod 600` / `icacls` 限制权限 → 跑 quota 验证
+
+### Changed
+- **setup-and-test.sh / .ps1 改为向后兼容 wrapper**（v1.2.0 用户的命令不破）
+  - 跑旧脚本会自动跳转到 `setup-env.sh` / `setup-env.ps1`
+  - 老用户能继续 `bash setup-and-test.sh`，行为已统一为"写 .env"
+
+### Documentation
+- README 快速开始重写：`.env` 优先（占第 1 位）
+- SKILL.md 新增".env 文件示例"段，凭证来源优先级写明
+- SKILL.md Endpoints 表修正：上传改三步、删除补 `opera=delete` 参数
+
+### Why this matters
+之前的 `setup-and-test.ps1` 用 `SecureString` + `$PROFILE` 持久化，**只有 Windows PowerShell 用着顺手**。
+换成 `.env` 之后，bash / PowerShell / zsh / fish / VSCode 全部统一用法，
+而且**多项目多账号**、**关掉重开不丢**、**跨平台** 三个维度都更优。
+
 ## [1.2.0] - 2026-06-13
 
 ### Added

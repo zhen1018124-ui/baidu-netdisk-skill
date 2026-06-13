@@ -18,6 +18,8 @@ ENV/
 # 敏感凭证（绝对不能进 git）
 .env
 .env.*
+# 重新包含 .env.example 模板（只有占位符，公开）
+!.env.example
 *.key
 *.pem
 *.baidu
