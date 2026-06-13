@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# 虚拟环境
+venv/
+env/
+.venv/
+ENV/
+
+# 敏感凭证（绝对不能进 git）
+.env
+.env.*
+*.key
+*.pem
+*.baidu
+cookies.txt
+baidu_cookies*
+BDUSS*
+
+# IDE / 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 打包产物（用 Gitee Release 管理）
+*.zip
+*.tar.gz
+*.tgz
+
+# 测试残留
+debug-*.py
+test-upload-*.txt
+test-*.txt
+__pycache__/
