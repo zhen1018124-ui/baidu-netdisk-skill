@@ -49,3 +49,6 @@ debug-*.py
 test-upload-*.txt
 test-*.txt
 __pycache__/
+
+# Claude Code / AI 工具私有元数据（给 AI 操作手册用，不公开）
+CLAUDE.md
